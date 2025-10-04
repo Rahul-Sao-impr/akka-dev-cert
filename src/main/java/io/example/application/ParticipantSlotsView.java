@@ -22,8 +22,44 @@ public class ParticipantSlotsView extends View {
     public static class ParticipantSlotsViewUpdater extends TableUpdater<SlotRow> {
 
         public Effect<SlotRow> onEvent(ParticipantSlotEntity.Event event) {
-            // Supply your own implementation
-            return effects().ignore();
+            return switch (event) {
+                case Booked booked -> effects().updateRow(
+                        new SlotRow(
+                                booked.slotId(),
+                                booked.participantId(),
+                                booked.participantType().name(),
+                                booked.bookingId(),
+                                "BOOKED"
+                        )
+                );
+                case Canceled canceled -> effects().updateRow(
+                        new SlotRow(
+                                canceled.slotId(),
+                                canceled.participantId(),
+                                canceled.participantType().name(),
+                                canceled.bookingId(),
+                                "CANCELED"
+                        )
+                );
+                case MarkedAvailable markedAvailable -> effects().updateRow(
+                        new SlotRow(
+                                markedAvailable.slotId(),
+                                markedAvailable.participantId(),
+                                markedAvailable.participantType().name(),
+                                "NOT_BOOKED",
+                                "AVAILABLE"
+                        )
+                );
+                case UnmarkedAvailable unmarkedAvailable -> effects().updateRow(
+                        new SlotRow(
+                                unmarkedAvailable.slotId(),
+                                unmarkedAvailable.participantId(),
+                                unmarkedAvailable.participantType().name(),
+                                "NOT_BOOKED",
+                                "UNAVAILABLE"
+                        )
+                );
+            };
         }
     }
 
@@ -41,12 +77,16 @@ public class ParticipantSlotsView extends View {
     public record SlotList(List<SlotRow> slots) {
     }
 
-    // @Query("SELECT .... ")
+    @Query("SELECT * as slots FROM participant_slots_view WHERE participantId = :participantId")
     public QueryEffect<SlotList> getSlotsByParticipant(String participantId) {
         return queryResult();
     }
 
-    // @Query("SELECT ...")
+    @Query(
+       """
+       SELECT * as slots FROM participant_slots_view
+       WHERE participantId = :participantId AND status = :status"""
+    )
     public QueryEffect<SlotList> getSlotsByParticipantAndStatus(ParticipantStatusInput input) {
         return queryResult();
     }

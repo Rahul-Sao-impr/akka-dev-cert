@@ -23,7 +23,48 @@ public class SlotToParticipantConsumer extends Consumer {
     }
 
     public Effect onEvent(BookingEvent event) {
-        // Supply your own implementation
+        var participantSlotEntityId = participantSlotId(event);
+        logger.info("Received BookingEvent : {}... generated participantSlotEntityId {}", event, participantSlotEntityId);
+        switch (event) {
+            case BookingEvent.ParticipantCanceled participantCanceled ->
+                    this.client
+                            .forEventSourcedEntity(participantSlotEntityId)
+                            .method(ParticipantSlotEntity::cancel)
+                            .invoke(new ParticipantSlotEntity.Commands.Cancel(
+                                    participantSlotEntityId,
+                                    participantCanceled.participantId(),
+                                    participantCanceled.participantType(),
+                                    participantCanceled.bookingId()
+                            ));
+            case BookingEvent.ParticipantBooked participantBooked ->
+                    this.client
+                            .forEventSourcedEntity(participantSlotEntityId)
+                            .method(ParticipantSlotEntity::book)
+                            .invoke(new ParticipantSlotEntity.Commands.Book(
+                                    participantSlotEntityId,
+                                    participantBooked.participantId(),
+                                    participantBooked.participantType(),
+                                    participantBooked.bookingId()
+                            ));
+            case BookingEvent.ParticipantMarkedAvailable participantMarkedAvailable ->
+                    this.client
+                            .forEventSourcedEntity(participantSlotEntityId)
+                            .method(ParticipantSlotEntity::markAvailable)
+                            .invoke(new ParticipantSlotEntity.Commands.MarkAvailable(
+                                    participantSlotEntityId,
+                                    participantMarkedAvailable.participantId(),
+                                    participantMarkedAvailable.participantType()
+                            ));
+            case BookingEvent.ParticipantUnmarkedAvailable participantUnmarkedAvailable ->
+                    this.client
+                            .forEventSourcedEntity(participantSlotEntityId)
+                            .method(ParticipantSlotEntity::unmarkAvailable)
+                            .invoke(new ParticipantSlotEntity.Commands.UnmarkAvailable(
+                                    participantSlotEntityId,
+                                    participantUnmarkedAvailable.participantId(),
+                                    participantUnmarkedAvailable.participantType()
+                            ));
+        }
         return effects().done();
     }
 
