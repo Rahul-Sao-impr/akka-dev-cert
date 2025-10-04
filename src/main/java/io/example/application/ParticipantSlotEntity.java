@@ -12,22 +12,48 @@ public class ParticipantSlotEntity
 
     public Effect<Done> unmarkAvailable(ParticipantSlotEntity.Commands.UnmarkAvailable unmark) {
         // Supply your own implementation
-        return effects().reply(Done.done());
+        return effects()
+                .persist(new ParticipantSlotEntity.Event.UnmarkedAvailable(
+                        unmark.slotId(),
+                        unmark.participantId(),
+                        unmark.participantType()
+                ))
+                .thenReply(state -> Done.getInstance());
     }
 
     public Effect<Done> markAvailable(ParticipantSlotEntity.Commands.MarkAvailable mark) {
         // Supply your own implementation
-        return effects().reply(Done.done());
+        return effects()
+                .persist(new ParticipantSlotEntity.Event.MarkedAvailable(
+                        mark.slotId(),
+                        mark.participantId(),
+                        mark.participantType()
+                ))
+                .thenReply(state -> Done.getInstance());
     }
 
     public Effect<Done> book(ParticipantSlotEntity.Commands.Book book) {
         // Supply your own implementation
-        return effects().reply(Done.done());
+        return effects()
+                .persist(new ParticipantSlotEntity.Event.Booked(
+                        book.slotId(),
+                        book.participantId(),
+                        book.participantType(),
+                        book.bookingId()
+                ))
+                .thenReply(state -> Done.getInstance());
     }
 
     public Effect<Done> cancel(ParticipantSlotEntity.Commands.Cancel cancel) {
         // Supply your own implementation
-        return effects().reply(Done.done());
+        return effects()
+                .persist(new ParticipantSlotEntity.Event.Canceled(
+                        cancel.slotId(),
+                        cancel.participantId(),
+                        cancel.participantType(),
+                        cancel.bookingId()
+                ))
+                .thenReply(state -> Done.getInstance());
     }
 
     record State(
@@ -79,8 +105,37 @@ public class ParticipantSlotEntity
     }
 
     @Override
-    public ParticipantSlotEntity.State applyEvent(ParticipantSlotEntity.Event event) {
-        // Supply your own implementation
-        return null;
-    }
+        public ParticipantSlotEntity.State applyEvent(ParticipantSlotEntity.Event event) {
+            return switch (event) {
+                case Event.Booked booked ->
+                    new ParticipantSlotEntity.State(
+                            booked.slotId(),
+                            booked.participantId(),
+                            booked.participantType(),
+                            "BOOKED"
+                    );
+                case Event.Canceled canceled ->
+                        new ParticipantSlotEntity.State(
+                                canceled.slotId(),
+                                canceled.participantId(),
+                                canceled.participantType(),
+                                "CANCELED"
+                        );
+
+                case Event.MarkedAvailable markedAvailable ->
+                        new ParticipantSlotEntity.State(
+                                markedAvailable.slotId(),
+                                markedAvailable.participantId(),
+                                markedAvailable.participantType(),
+                                "AVAILABLE"
+                        );
+                case Event.UnmarkedAvailable unmarkedAvailable ->
+                        new ParticipantSlotEntity.State(
+                                unmarkedAvailable.slotId(),
+                                unmarkedAvailable.participantId(),
+                                unmarkedAvailable.participantType(),
+                                "UNAVAILABLE"
+                        );
+            };
+        }
 }

@@ -1,9 +1,13 @@
 package io.example.domain;
 
+import io.example.application.BookingSlotEntity;
 import io.example.domain.Participant.ParticipantType;
+
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 // The Timeslot is a core domain object. It maintain two internal sets:
 // the list of bookings and the list of participants available for booking.
