@@ -9,7 +9,7 @@ import io.example.domain.Timeslot;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class FlightIntegrationTest extends TestKitSupport {
+public class FlightEndpointTest extends TestKitSupport {
     final String URL_PREFIX = "/flight";
 
     @Test
